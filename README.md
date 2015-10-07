@@ -1,4 +1,5 @@
-> 1. Using the material that we have covered in Lectures 8, 9, and 10, explain why the broken program doesn't work. What concurrency-related problems are occuring in this program? If you see the program end in livelock, then describe what is happening with the threads. Why can't they make progress? If you see the program end in another way, such as getting to the point where it prints out the product ids but doesn't include all of them, explain why you think that happened. Note: If you start to add println statements to the Producers and Consumers, you may actually altar the behavior of the program! If you observe this, then also include a discussion on why that happens as well. In your answer, if you want to include snippets of code and/or output to explain what you are seeing, then do so. Use all of Markdown's capabilities to display what you need to explain the concurrency-related problems that you are observing.
+###1
+> Using the material that we have covered in Lectures 8, 9, and 10, explain why the broken program doesn't work. What concurrency-related problems are occuring in this program? If you see the program end in livelock, then describe what is happening with the threads. Why can't they make progress? If you see the program end in another way, such as getting to the point where it prints out the product ids but doesn't include all of them, explain why you think that happened. Note: If you start to add println statements to the Producers and Consumers, you may actually altar the behavior of the program! If you observe this, then also include a discussion on why that happens as well. In your answer, if you want to include snippets of code and/or output to explain what you are seeing, then do so. Use all of Markdown's capabilities to display what you need to explain the concurrency-related problems that you are observing.
 
 When we ran the first version of the broken program, we got the output as below:
 
@@ -87,7 +88,8 @@ The race conditions are caused because there are no locks placed on the shared r
 	
 At this point, the producers stop creating objects and the consumers start up a second after execution starts and start consuming the objects. The 10 consumers start up and consume all the objects in the queue and once the queue is empty, they wait for the producers to create more objects while constantly checking if the queue has any products. The memory barrier caused by optimizations made by the compiler results in a situation where, even though the size of the queue changes, this change is never propogated to the producers thread. Because of this, the procers never create more products to insert into  the queue and so, the consumers have nothing to read from the queue. Therefore, even though all the threads are running, none of them is making any progress which is the livelock occurring in this program.
 
-> 3. Now turn your attention to creating an implementation of the program that functions correctly in the fixed directory. In your answer to this question, you should discuss the approach you took to fix the problem and get your version of the program to generate output that is similar to the example_output.txt file that is included with the repo.
+###2
+> Now turn your attention to creating an implementation of the program that functions correctly in the fixed directory. In your answer to this question, you should discuss the approach you took to fix the problem and get your version of the program to generate output that is similar to the example_output.txt file that is included with the repo.
 
 The main issues in the broken program were the race conditions and the livelock which happens due to the memory barriers between the producer and consumer threads. To fix the race condition, we need to make sure that only one thread is reading or updating a queue at any particular time. To do this, we need to sychronize the reads and writes to the queue among the producers and consumers. To do this, we put the block of code which reads from and writes to the queue in a synchronized code block as follows:
 
@@ -457,7 +459,7 @@ While this program almost works as expected (*Producer <5>* created *Product <18
     		}
     		...
     		
-This works perfectly fine. The producers and consumers run concurrently and the output generated has the numbera 0 to 199 in the correct order:
+This works perfectly fine and we get the output as below:
 
 	...
 	Queue Size: 10
@@ -758,4 +760,4 @@ This works perfectly fine. The producers and consumers run concurrently and the 
 	198
 	199
 
-The first half of the output was lost, but clearly, the program completed, the runs of producers and consumers were concurrent and the output displays the numbers 0 to 199 in the correct order.
+The first half of the output was not available, but clearly, the program completed, the runs of producers and consumers were concurrent and the output displays the numbers 0 to 199 in the correct order.
