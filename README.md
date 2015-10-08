@@ -89,6 +89,245 @@ The race conditions are caused because there are no locks placed on the shared r
 At this point, the producers stop creating objects and the consumers start up a second after execution starts and start consuming the objects. The 10 consumers start up and consume all the objects in the queue and once the queue is empty, they wait for the producers to create more objects while constantly checking if the queue has any products. The memory barrier caused by optimizations made by the compiler results in a situation where, even though the size of the queue changes, this change is never propogated to the producers thread. Because of this, the procers never create more products to insert into  the queue and so, the consumers have nothing to read from the queue. Therefore, even though all the threads are running, none of them is making any progress which is the livelock occurring in this program.
 
 ###2
+>Now switch your attention to the broken2 program. The only difference between the two programs are the synchronized keywords on the methods contained in ProductionLine.java. For this question, explain why this approach to fixing the program failed. Why is it that synchronizing these methods is not enough. What interactions between the threads are still occurring that cause the program to not be able to produce the correct output? Again, you may use snippets of code and/or output to illustrate your points. The only requirement for this question is that you focus exclusively on issues related to why this particular approach fails to solve the problem. In other words, your answer to this question should be different than your answer to the question above where you are discussing the program and its concurrency problems in general.
+
+Output of broken2:
+	$ bin/runbroken
+	Queue empty!
+	Producer 1 Produced: Product<0> on iteration 0
+	Producer 9 Produced: Product<8> on iteration 0
+	Producer 6 Produced: Product<5> on iteration 0
+	Producer 1 Produced: Product<9> on iteration 1
+	Producer 4 Produced: Product<3> on iteration 0
+	Producer 5 Produced: Product<4> on iteration 0
+	Producer 4 Produced: Product<12> on iteration 1
+	Producer 0 Produced: Product<0> on iteration 0
+	Producer 8 Produced: Product<7> on iteration 0
+	Producer 7 Produced: Product<6> on iteration 0
+	Producer 3 Produced: Product<2> on iteration 0
+	Producer 8 Produced: Product<16> on iteration 1
+	Producer 0 Produced: Product<15> on iteration 1
+	Producer 4 Produced: Product<14> on iteration 2
+	Producer 5 Produced: Product<13> on iteration 1
+	Producer 6 Produced: Product<10> on iteration 1
+	Producer 1 Produced: Product<11> on iteration 2
+	Producer 9 Produced: Product<9> on iteration 1
+	Producer 2 Produced: Product<1> on iteration 0
+	Too many items in the queue: 19!
+	Too many items in the queue: 19!
+	Consumer 0 Consumed: Product<0>
+	Consumer 0 Consumed: Product<8>
+	Consumer 0 Consumed: Product<9>
+	Consumer 1 Consumed: Product<5>
+	Consumer 6 Consumed: Product<196>
+	Consumer 6 received done notification. Goodbye.
+	0
+	1
+	2
+	3
+	4
+	5
+	6
+	7
+	8
+	9
+	10
+	11
+	12
+	13
+	14
+	15
+	16
+	17
+	18
+	20
+	21
+	22
+	23
+	24
+	25
+	26
+	27
+	28
+	29
+	30
+	31
+	32
+	33
+	34
+	35
+	36
+	37
+	38
+	39
+	40
+	41
+	42
+	43
+	44
+	45
+	46
+	47
+	48
+	49
+	50
+	51
+	52
+	53
+	54
+	55
+	56
+	57
+	58
+	59
+	61
+	62
+	63
+	64
+	65
+	66
+	67
+	68
+	70
+	71
+	72
+	73
+	74
+	75
+	76
+	77
+	78
+	79
+	80
+	81
+	82
+	83
+	84
+	85
+	86
+	88
+	89
+	90
+	91
+	92
+	93
+	94
+	95
+	96
+	97
+	98
+	99
+	100
+	101
+	102
+	103
+	105
+	106
+	107
+	108
+	109
+	110
+	111
+	112
+	113
+	114
+	115
+	116
+	117
+	118
+	119
+	120
+	121
+	122
+	123
+	124
+	125
+	126
+	127
+	128
+	129
+	130
+	131
+	132
+	133
+	134
+	135
+	136
+	137
+	138
+	139
+	140
+	141
+	142
+	143
+	144
+	145
+	146
+	147
+	148
+	149
+	150
+	151
+	152
+	153
+	154
+	155
+	156
+	157
+	158
+	159
+	160
+	161
+	162
+	163
+	164
+	165
+	166
+	167
+	168
+	169
+	170
+	171
+	172
+	173
+	174
+	175
+	176
+	177
+	178
+	179
+	180
+	181
+	182
+	183
+	184
+	185
+	186
+	187
+	188
+	189
+	190
+	191
+	192
+	193
+	194
+	195
+	196
+
+The synchronized keyword is used to prevent threads from interfering with each other and also to prevent memory inconsistency errors.
+In the program broken 2, the methods by themselves are synchronized. But the entire object, which the method is accessing is not synchronized. This causes the producers and consumers to access the object at the same time this causes it to miss a few objects. 
+So when the producer produces the product the consumer reads the product at the same time the producer produces another product which the consumer reads and consumes. This leads to gap in the queue. This is because the access to the methods have been synchronized and the access to the queue still remains unprotected. This leads to arbitrary access to the queue object from threads of either class.
+As seen from the output 
+
+	Producer 4 Produced: Product<196> on iteration 19
+	Consumer 6 Consumed: Product<195>
+	Producer 4 is done. Shutting down.
+	Consumer 6 Consumed: Product<196>
+	Consumer 6 received done notification. Goodbye.
+
+We see that the last product consumed is Product<196> and consumer 6 consumes the product. But according to the problem statement there should be 199 products, the last 3 product are missing, this shows that even though the methods are synchronised, the access to the methods is not synchronised.
+
+###3
 > Now turn your attention to creating an implementation of the program that functions correctly in the fixed directory. In your answer to this question, you should discuss the approach you took to fix the problem and get your version of the program to generate output that is similar to the example_output.txt file that is included with the repo.
 
 The main issues in the broken program were the race conditions and the livelock which happens due to the memory barriers between the producer and consumer threads. To fix the race condition, we need to make sure that only one thread is reading or updating a queue at any particular time. To do this, we need to sychronize the reads and writes to the queue among the producers and consumers. To do this, we put the block of code which reads from and writes to the queue in a synchronized code block as follows:
