@@ -92,6 +92,7 @@ At this point, the producers stop creating objects and the consumers start up a 
 >Now switch your attention to the broken2 program. The only difference between the two programs are the synchronized keywords on the methods contained in ProductionLine.java. For this question, explain why this approach to fixing the program failed. Why is it that synchronizing these methods is not enough. What interactions between the threads are still occurring that cause the program to not be able to produce the correct output? Again, you may use snippets of code and/or output to illustrate your points. The only requirement for this question is that you focus exclusively on issues related to why this particular approach fails to solve the problem. In other words, your answer to this question should be different than your answer to the question above where you are discussing the program and its concurrency problems in general.
 
 Output of broken2:
+
 	$ bin/runbroken
 	Queue empty!
 	Producer 1 Produced: Product<0> on iteration 0
